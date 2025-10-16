@@ -1,17 +1,23 @@
+import { useState } from 'react';
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Card from '../components/Layout/Card';
+import EmptyState from '../components/Layout/EmptyState';
+import Header from '../components/Layout/Header';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 
 const ChatListScreen = ({ navigation }) => {
   const { chats, allUsers } = useChat();
   const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const getChatName = (chat) => {
     const otherParticipantIds = chat.participants.filter(id => id !== user.id);
@@ -27,52 +33,90 @@ const ChatListScreen = ({ navigation }) => {
     return lastMessage ? lastMessage.text : 'No messages yet';
   };
 
+  const filteredChats = chats.filter(chat => 
+    getChatName(chat).toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getLastMessage(chat).toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const renderChatItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.chatItem}
+    <Card 
       onPress={() => navigation.navigate('Chat', { chatId: item.id })}
+      style={styles.chatCard}
+      elevation={1}
     >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>💬</Text>
+      <View style={styles.chatItem}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>💬</Text>
+        </View>
+        <View style={styles.chatInfo}>
+          <Text style={styles.chatName}>{getChatName(item)}</Text>
+          <Text style={styles.lastMessage} numberOfLines={1}>
+            {getLastMessage(item)}
+          </Text>
+        </View>
+        <View style={styles.chatMeta}>
+          <Text style={styles.timestamp}>
+            {item.messages.length > 0 ? 
+              new Date(item.messages[item.messages.length - 1].timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+              : ''
+            }
+          </Text>
+          {item.messages.some(msg => !msg.read && msg.senderId !== user.id) && (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadText}>1</Text>
+            </View>
+          )}
+        </View>
       </View>
-      <View style={styles.chatInfo}>
-        <Text style={styles.chatName}>{getChatName(item)}</Text>
-        <Text style={styles.lastMessage} numberOfLines={1}>
-          {getLastMessage(item)}
-        </Text>
-      </View>
-      <View style={styles.chatMeta}>
-        <Text style={styles.timestamp}>
-          {item.messages.length > 0 ? 
-            new Date(item.messages[item.messages.length - 1].timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            : ''
-          }
-        </Text>
-      </View>
-    </TouchableOpacity>
+    </Card>
   );
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Messages</Text>
-        <TouchableOpacity style={styles.newChatButton}>
-          <Text style={styles.newChatText}>+</Text>
-        </TouchableOpacity>
+      <Header 
+        title="Messages" 
+        rightComponent={
+          <TouchableOpacity style={styles.newChatButton}>
+            <Icon name="add" size={24} color="white" />
+          </TouchableOpacity>
+        }
+      />
+      
+      <View style={styles.searchContainer}>
+        <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search messages..."
+          placeholderTextColor="#999"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity 
+            onPress={() => setSearchQuery('')}
+            style={styles.clearButton}
+          >
+            <Icon name="close-circle" size={20} color="#999" />
+          </TouchableOpacity>
+        )}
       </View>
       
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search messages..."
-        placeholderTextColor="#999"
-      />
-      
-      <FlatList
-        data={chats}
-        renderItem={renderChatItem}
-        keyExtractor={item => item.id}
-        showsVerticalScrollIndicator={false}
-      />
+      {filteredChats.length === 0 ? (
+        <EmptyState
+          icon="chatbubble-outline"
+          title="No conversations"
+          message={searchQuery ? "No messages match your search" : "Start a conversation by messaging someone"}
+          actionTitle="Find Contacts"
+        />
+      ) : (
+        <FlatList
+          data={filteredChats}
+          renderItem={renderChatItem}
+          keyExtractor={item => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </View>
   );
 };
@@ -80,47 +124,40 @@ const ChatListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#f8f9fa',
   },
-  header: {
+  searchContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
     backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    margin: 15,
+    paddingHorizontal: 15,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  newChatButton: {
-    backgroundColor: '#4CAF50',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  newChatText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+  searchIcon: {
+    marginRight: 10,
   },
   searchInput: {
-    backgroundColor: '#f5f5f5',
-    margin: 15,
-    padding: 12,
-    borderRadius: 10,
+    flex: 1,
+    paddingVertical: 12,
     fontSize: 16,
+    color: '#333',
+  },
+  clearButton: {
+    padding: 4,
+  },
+  listContent: {
+    padding: 8,
+  },
+  chatCard: {
+    marginHorizontal: 8,
+    marginVertical: 4,
   },
   chatItem: {
     flexDirection: 'row',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    padding: 16,
     alignItems: 'center',
   },
   avatar: {
@@ -153,7 +190,24 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 12,
-    color: '#999', 
+    color: '#999',
+    marginBottom: 4,
+  },
+  unreadBadge: {
+    backgroundColor: '#4CAF50',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unreadText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  newChatButton: {
+    padding: 4,
   },
 });
 
