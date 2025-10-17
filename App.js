@@ -11,7 +11,7 @@ import { EduProvider } from './src/context/EduContext';
 import AssignmentsScreen from './src/screens/AssignmentsScreen';
 import ChatListScreen from './src/screens/ChatListScreen';
 import ChatScreen from './src/screens/ChatScreen';
-import ClassroomScreen from './src/screens/ClassroomScreen';
+import ClassroomScreen from './src/screens/ClassroomScreen'; 
 import GradesScreen from './src/screens/GradesScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
