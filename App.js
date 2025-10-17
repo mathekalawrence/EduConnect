@@ -46,7 +46,7 @@ function MainTabs() {
           else if (route.name === 'Assignments') iconName = focused ? 'document-text' : 'document-text-outline';
           else if (route.name === 'Grades') iconName = focused ? 'bar-chart' : 'bar-chart-outline';
           else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
-          return <Icon name={iconName} size={size} color={color} />;
+          return <Icon name={iconName} size={size} color={color} />; 
         },
         tabBarActiveTintColor: '#4CAF50',
         tabBarInactiveTintColor: 'gray',
