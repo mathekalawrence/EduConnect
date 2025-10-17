@@ -186,7 +186,7 @@ function MainTabs() {
         tabBarActiveTintColor: '#4CAF50',
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: { backgroundColor: 'white' },
-        headerStyle: { backgroundColor: '#4CAF50' },
+        headerStyle: { backgroundColor: '#4CAF50' }, 
         headerTintColor: 'white',
       })}
     >
