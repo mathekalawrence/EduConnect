@@ -5,7 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ChatProvider } from './src/context/ChatContext';
-import { EduProvider } from './src/context/EduContext';
+import { EduProvider } from './src/context/EduContext'; 
 
 // Screens
 import AssignmentsScreen from './src/screens/AssignmentsScreen';
